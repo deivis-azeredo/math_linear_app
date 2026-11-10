@@ -1,0 +1,4 @@
+streamlit>=1.50
+pulp==3.3.2
+groq
+pandas
