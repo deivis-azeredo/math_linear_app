@@ -16,7 +16,8 @@ Classifique o problema em UMA categoria: "Modelagem linear geral", "Mistura", "P
 "Fazer x Comprar", "Transporte", "Transbordo", "Alocação".
 
 Regras de modelagem:
-- Variáveis com nomes curtos (x_A, x_B, y_12 ...). Em problemas com índices (transporte, transbordo, alocação, vários períodos), EXPANDA todas as variáveis (ex.: x_11, x_12, x_21...).
+- Variáveis com nomes curtos (x_A, x_B ...). Em problemas com índices (transporte, transbordo, alocação, vários períodos), EXPANDA todas as variáveis e nomeie-as com os rótulos do enunciado no formato x_<Origem><Destino>, ex.: x_E1P1 = equipe E1 no projeto P1; x_F2L3 = fábrica F2 para loja L3. Se o enunciado não rotula as entidades, use x_11, x_12 ...
+- Nos termos da função objetivo e das restrições, siga a ordem natural do enunciado: agrupe por destino (P1, P2, P3...) e, dentro de cada grupo, pela ordem das origens (E1, E2, E3...).
 - tipo da variável: "continua", "inteira" (quando o enunciado exige unidades inteiras) ou "binaria" (alocação 1-para-1, sim/não).
 - Todos os coeficientes são NÚMEROS (use ponto decimal). Coeficiente que não aparece numa expressão simplesmente não entra em "termos".
 - Todas as variáveis são >= 0 por padrão (não declare isso como restrição).

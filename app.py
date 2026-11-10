@@ -1,4 +1,5 @@
 import os
+import re
 
 import pandas as pd
 import streamlit as st
@@ -24,10 +25,14 @@ EXEMPLOS = {
 
 
 def latex_nome(n):
-    if "_" in n:
-        a, b = n.split("_", 1)
-        return f"{a}_{{{b.replace('_', ',')}}}"
-    return n
+    """x_E1P1 -> x_{E_1 P_1}; x_12 -> x_{12}; x_A -> x_{A}."""
+    if "_" not in n:
+        return n
+    a, b = n.split("_", 1)
+    b = b.replace("_", ",")
+    if re.search(r"[A-Za-z]\d", b):
+        b = re.sub(r"([A-Za-z]+)(\d+)", r"\1_{\2}\\,", b).rstrip("\\,")
+    return f"{a}_{{{b}}}"
 
 
 def latex_expr(termos):
