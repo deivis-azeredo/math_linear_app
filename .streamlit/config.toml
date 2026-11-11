@@ -1,6 +1,7 @@
 [theme]
 base = "dark"
 primaryColor = "#8b5cf6"
+background: url("math.png") center/cover fixed;
 backgroundColor = "#0f172a"
 secondaryBackgroundColor = "#1e1b4b"
 textColor = "#e2e8f0"
