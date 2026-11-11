@@ -24,7 +24,7 @@ h1, h2, h3 {
     font-weight: 700;
 }
 h1 {
-    background: linear-gradient(90deg, #38bdf8, #a78bfa);
+    background: linear-gradient(255, 165, 0, 0.8);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
