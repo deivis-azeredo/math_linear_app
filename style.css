@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+/* Fundo com gradiente */
+.stApp {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+    background-attachment: fixed;
+    font-family: 'Inter', sans-serif;
+    color: #e2e8f0;
+}
+
+/* Cabeçalho transparente */
+header[data-testid="stHeader"] {
+    background: transparent;
+}
+
+/* Títulos */
+h1, h2, h3 {
+    color: #ffffff;
+    font-weight: 700;
+}
+h1 {
+    background: linear-gradient(90deg, #38bdf8, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Barra lateral */
+section[data-testid="stSidebar"] {
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(10px);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Campo de texto */
+.stTextArea textarea, .stTextInput input {
+    background: rgba(255, 255, 255, 0.06);
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+}
+.stTextArea textarea:focus, .stTextInput input:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3);
+}
+
+/* Botões */
+.stButton > button {
+    background: linear-gradient(90deg, #38bdf8, #8b5cf6);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 0.6rem 1.6rem;
+    font-weight: 600;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.stButton > button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+    color: white;
+}
+
+/* Cartões de resultado (expanders) */
+div[data-testid="stExpander"] {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+}
+
+/* Esconde menu e rodapé padrão */
+#MainMenu, footer {visibility: hidden;}
