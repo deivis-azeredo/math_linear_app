@@ -7,12 +7,31 @@ import streamlit as st
 import ai
 import engine
 #==============================================COMEÇO
-def carregar_css(caminho: str):
-    with open(caminho, encoding="utf-8") as f:
-        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+import base64
+import streamlit as st
 
 st.set_page_config(page_title="MathModel AI", page_icon="📐", layout="wide")
-carregar_css("style.css")
+
+def aplicar_estilo(css_path: str, imagem_path: str):
+    with open(imagem_path, "rb") as f:
+        img_b64 = base64.b64encode(f.read()).decode()
+    with open(css_path, encoding="utf-8") as f:
+        css = f.read()
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background:
+                linear-gradient(rgba(15,23,42,0.55), rgba(15,23,42,0.55)),
+                url("data:image/png;base64,{img_b64}") center / cover fixed no-repeat;
+        }}
+        {css}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+aplicar_estilo("style.css", "math.png")
 #=====================================================fim
 
 st.set_page_config(page_title="MathModel AI", page_icon="📐", layout="wide")
