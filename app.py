@@ -7,6 +7,17 @@ import streamlit as st
 import ai
 import engine
 
+'''
+aqui vai a minha folha de estilo
+'''
+def carregar_css(caminho: str):
+    with open(caminho, encoding="utf-8") as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+st.set_page_config(page_title="MathModel AI", page_icon="📐", layout="wide")
+carregar_css("style.css")
+#=====================================================fim
+
 st.set_page_config(page_title="MathModel AI", page_icon="📐", layout="wide")
 
 EXEMPLOS = {
