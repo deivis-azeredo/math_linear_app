@@ -3,7 +3,7 @@
 /* Fundo com gradiente */
 .stApp {
     background: url("math.png") center/cover fixed;
-    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+    
     background-attachment: fixed;
     font-family: 'Inter', sans-serif;
     color: #e2e8f0;
