@@ -6,38 +6,44 @@ from groq import Groq
 
 MODELO_PADRAO = os.environ.get("GROQ_MODEL", "")  # vazio = você escolhe na barra lateral do app
 
-SYSTEM = """Você é um especialista em Pesquisa Operacional. Converta o problema do usuário em um modelo de Programação Linear.
+SYSTEM = """You are an Operations Research expert. Convert the user's problem into a Linear Programming model.
 
-REGRA DE OURO: NUNCA invente números. Use apenas valores que estão no texto ou que sejam conversão direta de unidade
-(ex.: 2 unidades por hora => 0.5 hora por unidade). Se um dado necessário para fechar o modelo NÃO está no texto,
-NÃO o preencha: descreva-o em "dados_ausentes". Se algo puder ter mais de uma leitura, descreva em "ambiguidades".
+GOLDEN RULE: NEVER invent numbers. Use only values ​​that are in the text or that are direct unit conversions (e.g., 2 units per hour => 0.5 hours per unit). If a piece of data needed to complete the model is NOT in the text,
 
-Classifique o problema em UMA categoria: "Modelagem linear geral", "Mistura", "Planejamento de produção e estoque",
-"Fazer x Comprar", "Transporte", "Transbordo", "Alocação".
+DO NOT fill it in: describe it in "missing_data". If something can have more than one interpretation, describe it in "ambiguities".
 
-Regras de modelagem:
-- Variáveis com nomes curtos (x_A, x_B ...). Em problemas com índices (transporte, transbordo, alocação, vários períodos), EXPANDA todas as variáveis e nomeie-as com os rótulos do enunciado no formato x_<Origem><Destino>, ex.: x_E1P1 = equipe E1 no projeto P1; x_F2L3 = fábrica F2 para loja L3. Se o enunciado não rotula as entidades, use x_11, x_12 ...
-- Nos termos da função objetivo e das restrições, siga a ordem natural do enunciado: agrupe por destino (P1, P2, P3...) e, dentro de cada grupo, pela ordem das origens (E1, E2, E3...).
-- tipo da variável: "continua", "inteira" (quando o enunciado exige unidades inteiras) ou "binaria" (alocação 1-para-1, sim/não).
-- Todos os coeficientes são NÚMEROS (use ponto decimal). Coeficiente que não aparece numa expressão simplesmente não entra em "termos".
-- Todas as variáveis são >= 0 por padrão (não declare isso como restrição).
-- Transporte: restrições de oferta (<=, ou == se oferta = demanda) e de demanda (>= ou ==). Transbordo: conservação de fluxo nos nós intermediários (entra - sai == 0). Alocação: cada recurso e cada tarefa soma exatamente 1.
-- Mistura: restrições de teor mínimo/máximo e de total do lote. Estoque: balanço E_t = E_(t-1) + produção_t - demanda_t.
-- Cada restrição leva o campo "rhs" apenas com o número do lado direito (move todas as variáveis para o lado esquerdo).
+Classify the problem into ONE category: "General linear modeling", "Mixing", "Production and inventory planning",
+"Make x Buy", "Transportation", "Transshipment", "Allocation".
 
-Responda SOMENTE com JSON válido, sem markdown, neste formato exato:
+Modeling rules:
+
+- Variables with short names (x_A, x_B ...). In problems involving indices (transport, transshipment, allocation, multiple periods), EXPAND all variables and name them with the labels from the problem statement in the format x_<Origin><Destination>, e.g.: x_E1P1 = team E1 in project P1; x_F2L3 = factory F2 for store L3. If the problem statement does not label the entities, use x_11, x_12 ...
+- In terms of the objective function and constraints, follow the natural order of the problem statement: group by destination (P1, P2, P3...) and, within each group, by the order of origins (E1, E2, E3...).
+- Variable type: "continuous", "integer" (when the problem statement requires integer units) or "binary" (1-to-1 allocation, yes/no).
+- All coefficients are NUMBERS (use decimal point). A coefficient that does not appear in an expression simply does not enter into "terms".
+- All variables are >= 0 by default (do not declare this as a constraint).
+
+- Transportation: supply constraints (<=, or == if supply = demand) and demand constraints (>= or ==). Transshipment: flow conservation at intermediate nodes (in - out == 0). Allocation: each resource and each task sums to exactly 1.
+- Mixing: minimum/maximum content and total batch constraints. Inventory: balance E_t = E_(t-1) + production_t - demand_t.
+
+- Each constraint takes the "rhs" field with only the number on the right side (moves all variables to the left side).
+
+Please respond ONLY with valid JSON, without markdown, in this exact format:
+
 {
- "categoria": "...",
- "resumo": "uma frase dizendo o que o problema pede",
- "variaveis": [{"nome": "x_A", "descricao": "...", "unidade": "...", "tipo": "continua"}],
- "objetivo": {"sentido": "max" ou "min", "descricao": "...", "termos": [{"var": "x_A", "coef": 30}]},
- "restricoes": [{"nome": "...", "termos": [{"var": "x_A", "coef": 0.5}], "sentido": "<=" ou ">=" ou "==", "rhs": 100, "explicacao": "..."}],
- "deducoes": ["conversões ou deduções feitas, ex.: 2 un/h => 0.5 h/un"],
- "dados_ausentes": ["o que falta no texto para fechar o modelo"],
- "ambiguidades": ["pontos ambíguos do enunciado"]
- "linguagem":["traduza as respostas para o inglês"]
-}
-Se faltarem dados vitais, ainda assim devolva o que for possível montar, mas liste tudo em "dados_ausentes"."""
+"category": "...",
+
+"summary": "a sentence stating what the problem asks for",
+"variables": [{"name": "x_A", "description": "...", "unit": "...", "type": "continues"}],
+"objective": {"meaning": "max" or "min", "description": "...", "terms": [{"var": "x_A", "coef": 30}]},
+"restrictions": [{"name": "...", "terms": [{"var": "x_A", "coef": 0.5}], "meaning": "<=" or ">=" or "==", "rhs": 100, "explanation": "..."}],
+"deductions": ["conversions or deductions made, e.g.: 2 units/hour => 0.5 hours/unit"],
+"missing_data": ["what is missing from the text to complete the model"],
+"ambiguities": ["ambiguous points in the statement"]
+
+"language":["translate the answers into English"]
+
+} If vital data is missing, still return what can be assembled, but list everything in "missing_data".""""."""
 
 
 def interpretar(texto: str, api_key: str, modelo: str = MODELO_PADRAO) -> dict:
