@@ -41,8 +41,6 @@ Please respond ONLY with valid JSON, without markdown, in this exact format:
 "missing_data": ["what is missing from the text to complete the model"],
 "ambiguities": ["ambiguous points in the statement"]
 
-"language":["translate the answers into English"]
-
 
 }
 If vital data is missing, still return what can be assembled, but list everything in "missing_data"."""
@@ -50,7 +48,7 @@ If vital data is missing, still return what can be assembled, but list everythin
 
 def interpretar(texto: str, api_key: str, modelo: str = MODELO_PADRAO) -> dict:
     if not modelo:
-        raise ValueError("Nenhum modelo escolhido. Escolha um na barra lateral (Modelos ativos).")
+        raise ValueError("No model chosen. Choose a model on the side bar (Modelos ativos).")
     client = Groq(api_key=api_key)
     resp = client.chat.completions.create(
         model=modelo,
