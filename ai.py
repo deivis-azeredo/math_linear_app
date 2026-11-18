@@ -35,6 +35,7 @@ Responda SOMENTE com JSON válido, sem markdown, neste formato exato:
  "deducoes": ["conversões ou deduções feitas, ex.: 2 un/h => 0.5 h/un"],
  "dados_ausentes": ["o que falta no texto para fechar o modelo"],
  "ambiguidades": ["pontos ambíguos do enunciado"]
+ "linguagem":["traduza as respostas para o inglês"]
 }
 Se faltarem dados vitais, ainda assim devolva o que for possível montar, mas liste tudo em "dados_ausentes"."""
 
