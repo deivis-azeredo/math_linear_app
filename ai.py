@@ -1,4 +1,4 @@
-"""Interpretação do problema em linguagem natural via Groq (resposta em JSON puro)."""
+
 import json
 import os
 
@@ -6,7 +6,13 @@ from groq import Groq
 
 idioma = st.sidebar.selectbox("Language / Idioma", ["English", "Português"])
 
-
+TEXTOS = {
+    "English": {"titulo": "MathModel AI", "resolver": "Solve model"},
+    "Português": {"titulo": "MathModel AI", "resolver": "Resolver modelo"},
+}
+t = TEXTOS[idioma]
+st.title(t["titulo"])
+st.button(t["resolver"])
 
 MODELO_PADRAO = os.environ.get("GROQ_MODEL", "")  # vazio = você escolhe na barra lateral do app
 
