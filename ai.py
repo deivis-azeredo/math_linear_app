@@ -43,7 +43,9 @@ Please respond ONLY with valid JSON, without markdown, in this exact format:
 
 "language":["translate the answers into English"]
 
-} If vital data is missing, still return what can be assembled, but list everything in "missing_data".""""."""
+
+}
+If vital data is missing, still return what can be assembled, but list everything in "missing_data"."""
 
 
 def interpretar(texto: str, api_key: str, modelo: str = MODELO_PADRAO) -> dict:
