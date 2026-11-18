@@ -1,27 +1,20 @@
-
+"""Interpretação do problema em linguagem natural via Groq (resposta em JSON puro)."""
 import json
 import os
 
 from groq import Groq
 
-idioma = st.sidebar.selectbox("Language / Idioma", ["English", "Português"])
-
-TEXTOS = {
-    "English": {"titulo": "MathModel AI", "resolver": "Solve model"},
-    "Português": {"titulo": "MathModel AI", "resolver": "Resolver modelo"},
-}
-t = TEXTOS[idioma]
-st.title(t["titulo"])
-st.button(t["resolver"])
-
 MODELO_PADRAO = os.environ.get("GROQ_MODEL", "")  # vazio = você escolhe na barra lateral do app
 
-system_prompt = f"""
-You are an assistant that converts word problems into linear programming models.
-Always answer in {idioma}, regardless of the language of the user's input.
-Present: decision variables, objective function, constraints, non-negativity.
-Never invent formulas; flag ambiguities and ask for clarification.
-"""
+SYSTEM = """Você é um especialista em Pesquisa Operacional. Converta o problema do usuário em um modelo de Programação Linear.
+
+REGRA DE OURO: NUNCA invente números. Use apenas valores que estão no texto ou que sejam conversão direta de unidade
+(ex.: 2 unidades por hora => 0.5 hora por unidade). Se um dado necessário para fechar o modelo NÃO está no texto,
+NÃO o preencha: descreva-o em "dados_ausentes". Se algo puder ter mais de uma leitura, descreva em "ambiguidades".
+
+Classifique o problema em UMA categoria: "Modelagem linear geral", "Mistura", "Planejamento de produção e estoque",
+"Fazer x Comprar", "Transporte", "Transbordo", "Alocação".
+
 Regras de modelagem:
 - Variáveis com nomes curtos (x_A, x_B ...). Em problemas com índices (transporte, transbordo, alocação, vários períodos), EXPANDA todas as variáveis e nomeie-as com os rótulos do enunciado no formato x_<Origem><Destino>, ex.: x_E1P1 = equipe E1 no projeto P1; x_F2L3 = fábrica F2 para loja L3. Se o enunciado não rotula as entidades, use x_11, x_12 ...
 - Nos termos da função objetivo e das restrições, siga a ordem natural do enunciado: agrupe por destino (P1, P2, P3...) e, dentro de cada grupo, pela ordem das origens (E1, E2, E3...).
