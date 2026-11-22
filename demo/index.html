@@ -1,1 +1,126 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How it works: Math Solver</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f2f5f1;--card:#fff;--fg:#17302b;--mut:#587068;--bd:#cdd9d3;--ac:#0f766e;--ok:#15803d;--er:#b91c1c;--wn:#b45309;--code:#e8efea;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a17;--card:#16241f;--fg:#e3efe9;--mut:#93aaa1;--bd:#2c433b;--ac:#5eead4;--ok:#4ade80;--er:#f87171;--wn:#fbbf24;--code:#1d2e28;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1a17;--card:#16241f;--fg:#e3efe9;--mut:#93aaa1;--bd:#2c433b;--ac:#5eead4;--ok:#4ade80;--er:#f87171;--wn:#fbbf24;--code:#1d2e28;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1060px;margin:0 auto;padding:20px 16px 40px}
+h1{font:600 26px/1.2 Georgia,"Times New Roman",serif;margin:0 0 4px}h3{font:600 17px Georgia,serif;margin:0 0 8px}
+.sub{color:var(--mut);margin:0 0 16px;max-width:70ch}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+button,select,input{font:inherit;color:var(--fg);background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:7px 12px}
+button{cursor:pointer}button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.tab[aria-pressed=true]{background:var(--ac);color:var(--bg);border-color:var(--ac)}
+#run{background:var(--fg);color:var(--bg);border-color:var(--fg);font-weight:600}#run:disabled{opacity:.5}
+.flow{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:6px 0 18px}
+.node{position:relative;text-align:left;padding:10px 10px 12px;border:2px solid var(--bd);border-radius:10px;background:var(--card);min-height:84px}
+.node b{display:block;font-size:13px}.node small{color:var(--mut);font-size:12px;line-height:1.3;display:block;margin-top:2px}
+.node:not(:last-child)::after{content:"";position:absolute;right:-11px;top:50%;width:10px;height:2px;background:var(--bd)}
+.node[aria-current=true]{box-shadow:0 0 0 3px color-mix(in srgb,var(--ac) 35%,transparent)}
+.node.running{border-color:var(--ac);animation:p 1s infinite}.node.ok{border-color:var(--ok)}.node.fail{border-color:var(--er);background:color-mix(in srgb,var(--er) 10%,var(--card))}.node.rec{border-color:var(--wn);background:color-mix(in srgb,var(--wn) 10%,var(--card))}
+@keyframes p{50%{background:color-mix(in srgb,var(--ac) 14%,var(--card))}}
+@media (prefers-reduced-motion:reduce){.node.running{animation:none}}
+.st{position:absolute;top:6px;right:8px;font-size:12px;font-weight:700}
+.cols{display:grid;grid-template-columns:3fr 2fr;gap:16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px 16px}
+.k{color:var(--mut);font-size:12.5px;font-weight:600;margin:10px 0 2px}
+pre,.mono{font:12.5px/1.5 ui-monospace,Menlo,Consolas,monospace;background:var(--code);border-radius:8px;padding:8px 10px;margin:0;overflow-x:auto;white-space:pre-wrap}
+table{border-collapse:collapse;width:100%;font-size:13px;display:block;overflow-x:auto}td,th{padding:3px 8px;border-bottom:1px solid var(--bd);text-align:left;white-space:nowrap}
+#log{max-height:360px;overflow:auto;font:12.5px/1.6 ui-monospace,Menlo,Consolas,monospace}#log div{padding:1px 0}
+.e{color:var(--er)}.w{color:var(--wn)}.g{color:var(--ok)}.m{color:var(--mut)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.chips button{font-size:13px;padding:4px 10px;border-radius:99px}
+#qa{margin-top:6px;min-height:20px}
+footer{margin-top:18px;color:var(--mut);font-size:13px}a{color:var(--ac)}
+@media (max-width:820px){.flow{grid-template-columns:repeat(2,1fr)}.node::after{display:none}.cols{grid-template-columns:1fr}}
+</style></head><body><main>
+<h1>How it works: from problem to optimal decision</h1>
+<p class="sub">Math Solver demo (<a href="https://github.com/deivis-azeredo">github.com/deivis-azeredo</a>). Pick a scenario, run the pipeline and click any step to see its input, the linear model, the solution and why the decision was made.</p>
+<div class="row" id="tabs" role="group" aria-label="Scenarios"></div>
+<div class="row">
+<button id="run">Run pipeline</button>
+<label>Fail at <select id="fs"><option value="">none</option><option value="extracao">Extraction (AI)</option><option value="solver">Solver</option><option value="validacao">Validation</option></select></label>
+<label>type <select id="fm"><option value="t">transient (retry fixes it)</option><option value="p">persistent (uses fallback)</option></select></label>
+</div>
+<div class="flow" id="flow"></div>
+<div class="cols">
+<section class="card" aria-live="polite"><div id="det"></div>
+<div class="k">Ask about this case</div>
+<div class="chips" id="chips"></div>
+<form id="qf" class="row" style="margin:0" onsubmit="return false"><input id="q" placeholder="E.g.: why this decision?" style="flex:1;min-width:160px" aria-label="Question"><button id="qb" type="button">Ask</button></form>
+<div id="qa"></div></section>
+<section class="card"><h3>Execution log</h3><div id="log"><div class="m">Waiting for a run…</div></div></section>
+</div>
+<footer>In this demo the solver (simplex, Big-M method) runs in the browser. In the project, the <code>solve()</code> adapter is swapped for a call to Math Solver; the diagram and log stay the same.</footer>
+<script>
+const $=s=>document.querySelector(s),sleep=t=>new Promise(r=>setTimeout(r,t));
+const fmt=v=>String(Math.round(v*100)/100),OPS={'<=':'≤','>=':'≥','=':'='};
+function simplex(P){const n=P.c.length,m=P.rows.length,M=1e6;let ns=0,na=0;P.rows.forEach(r=>{if(r.op!='=')ns++;if(r.op!='<=')na++});
+const W=n+ns+na,T=[],B=[],art=[];let si=n,ai=n+ns;
+P.rows.forEach(r=>{const w=new Array(W+1).fill(0);r.a.forEach((v,j)=>w[j]=v);w[W]=r.b;
+if(r.op=='<='){w[si]=1;B.push(si++)}else if(r.op=='>='){w[si++]=-1;w[ai]=1;B.push(ai);art.push(ai++)}else{w[ai]=1;B.push(ai);art.push(ai++)}T.push(w)});
+const sg=P.sense=='max'?1:-1,z=new Array(W+1).fill(0);P.c.forEach((v,j)=>z[j]=-sg*v);art.forEach(j=>z[j]=M);
+T.forEach((w,i)=>{if(art.includes(B[i]))for(let j=0;j<=W;j++)z[j]-=M*w[j]});
+let it=0;while(it<500){let p=-1,mn=-1e-9;for(let j=0;j<W;j++)if(z[j]<mn){mn=z[j];p=j}if(p<0)break;
+let r=-1,bs=Infinity;for(let i=0;i<m;i++)if(T[i][p]>1e-9){const q=T[i][W]/T[i][p];if(q<bs-1e-12){bs=q;r=i}}
+if(r<0)return{status:'unbounded'};const pv=T[r][p];for(let j=0;j<=W;j++)T[r][j]/=pv;
+for(let i=0;i<m;i++)if(i!=r){const f=T[i][p];if(f)for(let j=0;j<=W;j++)T[i][j]-=f*T[r][j]}
+const f=z[p];for(let j=0;j<=W;j++)z[j]-=f*T[r][j];B[r]=p;it++}
+const x=new Array(n).fill(0);B.forEach((b,i)=>{if(b<n)x[b]=Math.max(0,T[i][W])});
+if(B.some((b,i)=>b>=n+ns&&T[i][W]>1e-6))return{status:'infeasible'};
+return{status:'optimal',x,obj:P.c.reduce((s,v,j)=>s+v*x[j],0),it,dim:[n,m,ns,na]}}
+const solve=simplex; /* integration point: swap for a Math Solver call */
+const tr=(()=>{const o=['Factory A','Factory B'],d=['Rio','São Paulo','BH'],cs=[4,6,8,5,3,7],v=[],ds=[];
+o.forEach((a,i)=>d.forEach((b,j)=>{v.push(`${a} → ${b}`);}));
+const row=(n,f,op,b)=>({n,a:cs.map((_,k)=>f(Math.floor(k/3),k%3)?1:0),op,b});
+return{k:'tr',nome:'Transportation',texto:'Two factories ship products to three cities. Factory A produces up to 70 units and B up to 50. Rio needs 30, São Paulo 40 and BH 30. Cost per unit (R$): A→Rio 4, A→SP 6, A→BH 8, B→Rio 5, B→SP 3, B→BH 7. Minimize total cost.',sense:'min',v,c:cs,obj:'total cost (R$)',
+rows:[row('Capacity A',i=>i==0,'<=',70),row('Capacity B',i=>i==1,'<=',50),row('Demand Rio',(i,j)=>j==0,'>=',30),row('Demand SP',(i,j)=>j==1,'>=',40),row('Demand BH',(i,j)=>j==2,'>=',30)],
+un:'un.',ru:'un.'}})();
+const mx={k:'mx',nome:'Blend',texto:'Blend 100 kg of feed from corn (R$0.30/kg), soy (R$0.90/kg) and meal (R$0.50/kg). Minimum protein: 18 kg; maximum fiber: 5 kg; maximum prep time: 3 h (0.02, 0.05 and 0.03 h per kg). Minimize cost.',sense:'min',v:['Corn (kg)','Soy (kg)','Meal (kg)'],c:[.3,.9,.5],obj:'blend cost (R$)',
+rows:[{n:'Total blend',a:[1,1,1],op:'=',b:100},{n:'Protein (kg)',a:[.09,.46,.3],op:'>=',b:18},{n:'Fiber (kg)',a:[.02,.06,.1],op:'<=',b:5},{n:'Prep time (h)',a:[.02,.05,.03],op:'<=',b:3}],un:'kg'};
+const rc={k:'rc',nome:'Resource allocation',texto:'A woodshop makes tables (profit R$100), chairs (R$45) and shelves (R$80). Resources: 80 labor hours, 60 m² of wood and a R$700 budget. Per unit: table 5 h, 3 m², R$40; chair 2 h, 1 m², R$15; shelf 4 h, 3 m², R$30. Maximize profit.',sense:'max',v:['Tables','Chairs','Shelves'],c:[100,45,80],obj:'profit (R$)',
+rows:[{n:'Time (hours)',a:[5,2,4],op:'<=',b:80},{n:'Material (m² of wood)',a:[3,1,3],op:'<=',b:60},{n:'Money (R$ budget)',a:[40,15,30],op:'<=',b:700}],un:'un.'};
+const SC=[tr,mx,rc];
+const STEPS=[{id:'entrada',t:'Input',s:'problem as text'},{id:'extracao',t:'Extraction',s:'variables and constraints (AI)',er:'Groq API 429 (rate limit)',fb:'pre-validated scenario model'},{id:'modelo',t:'Linear model',s:'objective + constraints'},{id:'solver',t:'Solver',s:'simplex (Big-M)',er:'Math Solver API: 8 s timeout',fb:'local simplex in the browser'},{id:'validacao',t:'Validation',s:'checks each constraint',er:'numerical tolerance exception',fb:'basic feasibility check (1e-6)'},{id:'resposta',t:'Answer',s:'decision and rationale'}];
+let cur=SC[0],R,sel='entrada',busy=false,t0=0;const stt={};
+const terms=(a,v)=>a.map((x,j)=>x?`${fmt(x)}·x${j+1}`:'').filter(Boolean).join(' + ');
+function prep(s){cur=s;R=solve(s);R.rows=s.rows.map(r=>{const l=r.a.reduce((q,v,j)=>q+v*(R.x?R.x[j]:0),0);return{...r,l,act:Math.abs(l-r.b)<1e-6,ok:r.op=='<='?l<=r.b+1e-6:r.op=='>='?l>=r.b-1e-6:Math.abs(l-r.b)<1e-6}});
+STEPS.forEach(p=>stt[p.id]='');sel='entrada';$('#qa').innerHTML='';$('#log').innerHTML='<div class="m">Waiting for a run…</div>';draw()}
+function usada(){return cur.v.map((n,j)=>[n,R.x[j]]).filter(p=>p[1]>1e-6)}
+function why(){if(R.status!='optimal')return `No optimal solution: the problem is ${R.status}.`;const a=R.rows.filter(r=>r.act),f=R.rows.filter(r=>!r.act),z=cur.v.map((n,j)=>[n,R.x[j]]).filter(p=>p[1]<=1e-6);
+return `Used: ${usada().map(p=>`${p[0]} = ${fmt(p[1])}`).join('; ')}. `+(a.length?`Constraints at their limit (zero slack) that hold the result back: ${a.map(r=>r.n).join(', ')}. `:'')+(f.length?`With slack (not limiting): ${f.map(r=>`${r.n} (uses ${fmt(r.l)} of ${fmt(r.b)})`).join('; ')}. `:'')+(z.length?`Left at zero: ${z.map(p=>p[0]).join(', ')}, because combining them with the other options ${cur.sense=='min'?'costs more':'earns less'} within the limits.`:'')}
+function detail(id){const s=cur,mono=h=>`<pre>${h}</pre>`,K=(t,h)=>`<div class="k">${t}</div>${h}`,p=STEPS.find(x=>x.id==id);let h=`<h3>${p.t}</h3>`;
+if(id=='entrada')h+=K('In',`<p style="margin:0">${s.texto}</p>`)+K('Out','Clean text, ready for extraction.');
+if(id=='extracao')h+=K('In','The problem text.')+K('Process','The AI identifies what to decide (variables), what to measure (objective) and the limits (constraints).')+K('Out',mono(s.v.map((n,j)=>`x${j+1} = ${n}`).join('\n')+`\nobjective: ${s.sense=='min'?'minimize':'maximize'} ${s.obj}`));
+if(id=='modelo')h+=K('In','Extracted variables and parameters.')+K('Out (linear model)',mono(`${s.sense=='min'?'Min':'Max'} Z = ${terms(s.c,s.v)}\nsubject to:\n`+s.rows.map(r=>`  ${r.n}: ${terms(r.a)} ${OPS[r.op]} ${fmt(r.b)}`).join('\n')+'\n  all variables ≥ 0'));
+if(id=='solver')h+=K('In','Linear model matrix.')+K('Process',`Simplex with slack/surplus and artificial variables (Big-M). Size: ${R.dim?R.dim[0]+' variables, '+R.dim[1]+' constraints, '+R.dim[2]+' slack/surplus, '+R.dim[3]+' artificial':'n/a'}.`)+K('Out',`Status: <b>${R.status}</b>${R.it!=null?` in ${R.it} iterations`:''}.`);
+if(id=='validacao')h+=K('In','Candidate solution.')+K('Process','Plugs x into each constraint and compares it with the limit.')+K('Out',`<table><tr><th>Constraint</th><th>Used</th><th>Limit</th><th>Status</th></tr>${R.rows.map(r=>`<tr><td>${r.n}</td><td>${fmt(r.l)}</td><td>${OPS[r.op]} ${fmt(r.b)}</td><td>${r.ok?'✔':'✖'} ${r.act?'at limit':'with slack'}</td></tr>`).join('')}</table>`);
+if(id=='resposta'){h+=K('Optimal answer',R.status=='optimal'?mono(s.v.map((n,j)=>`${n}: ${fmt(R.x[j])}`).join('\n')+`\n${s.obj}: ${s.k=='rc'?'R$ ':'R$ '}${fmt(R.obj)}`):R.status);h+=K('Why this decision',`<p style="margin:0">${why()}</p>`)}
+if(p.er)h+=K('If it fails',`<span class="e">${p.er}</span>. Retry with growing wait; if it persists, fallback: ${p.fb}.`);return h}
+function draw(){$('#flow').innerHTML=STEPS.map((p,i)=>`<button class="node ${stt[p.id]}" data-i="${p.id}" aria-current="${sel==p.id}"><span class="st">${{ok:'✔',fail:'✖',rec:'↻',running:'…'}[stt[p.id]]||''}</span><b>${i+1}. ${p.t}</b><small>${p.s}</small></button>`).join('');
+document.querySelectorAll('.node').forEach(b=>b.onclick=()=>{sel=b.dataset.i;draw()});$('#det').innerHTML=detail(sel);
+document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k==cur.k))}
+function log(c,m){const d=document.createElement('div');d.className=c;d.textContent=`[${((performance.now()-t0)/1000).toFixed(1).padStart(4,'0')}s] ${m}`;$('#log').appendChild(d);$('#log').scrollTop=1e9}
+async function run(){if(busy)return;busy=true;$('#run').disabled=true;prep(cur);$('#log').innerHTML='';t0=performance.now();const fs=$('#fs').value,pm=$('#fm').value;log('m',`scenario: ${cur.nome}`);
+for(const p of STEPS){stt[p.id]='running';sel=p.id;draw();log('m',`▶ ${p.t}…`);await sleep(650);
+if(fs==p.id){stt[p.id]='fail';draw();log('e',`✖ ${p.t}: ${p.er} (attempt 1)`);await sleep(700);log('w','↻ retry 1/2 after 500 ms');await sleep(600);
+if(pm=='t'){log('g',`✔ ${p.t}: recovered on attempt 2`)}else{log('e',`✖ ${p.t}: failed again (attempt 2)`);await sleep(500);log('w','↻ retry 2/2 after 1000 ms');await sleep(500);log('e','✖ attempt 3 failed');log('w',`⤷ fallback: ${p.fb}`);log('g',`✔ ${p.t}: done via fallback`)}
+stt[p.id]='rec'}else{stt[p.id]='ok';log('g',`✔ ${p.t}`)}draw()}
+log('g',R.status=='optimal'?`■ pipeline finished: ${cur.obj} = ${fmt(R.obj)}`:`■ pipeline finished with no solution (${R.status})`);busy=false;$('#run').disabled=false}
+function ask(q){q=q.toLowerCase();let a;
+if(/constraint|limit|active/.test(q))a=R.rows.filter(r=>r.act).map(r=>`${r.n}: ${fmt(r.l)} ${OPS[r.op]} ${fmt(r.b)}`).join('; ')||'No constraint is at its limit.';
+else if(/why|decision|reason|explain/.test(q))a=why();
+else if(/cost|time|money|material|resource|used/.test(q))a=R.rows.map(r=>`${r.n}: ${fmt(r.l)} of ${fmt(r.b)}`).join('; ');
+else if(/answer|optimal|how much|result/.test(q))a=R.status=='optimal'?`${usada().map(p=>`${p[0]} = ${fmt(p[1])}`).join('; ')}. ${cur.obj}: ${fmt(R.obj)}.`:R.status;
+else a='Try: “what is the optimal answer?”, “why this decision?”, “which constraints limit the result?” or “how much time, money and material was used?”.';
+$('#qa').innerHTML=`<div class="mono"><b>${q?'Q: '+q.replace(/</g,'&lt;'):''}</b>\n${a}</div>`}
+$('#tabs').innerHTML=SC.map(s=>`<button class="tab" data-k="${s.k}">${s.nome}</button>`).join('');
+document.querySelectorAll('.tab').forEach((b,i)=>b.onclick=()=>{if(!busy)prep(SC[i])});
+$('#chips').innerHTML=['What is the optimal answer?','Why this decision?','Which constraints limit the result?','How much time, money and material was used?'].map(t=>`<button type="button">${t}</button>`).join('');
+document.querySelectorAll('#chips button').forEach(b=>b.onclick=()=>ask(b.textContent));
+$('#qb').onclick=()=>ask($('#q').value);$('#q').onkeydown=e=>{if(e.key=='Enter')ask($('#q').value)};$('#run').onclick=run;prep(SC[0]);
+</script></main></body></html>
 
